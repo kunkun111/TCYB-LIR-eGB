@@ -22,7 +22,7 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-# import pixiedust
+import pixiedust
 from math import exp,log
 from sklearn.preprocessing import  OneHotEncoder
 from sklearn.metrics import mean_squared_error
