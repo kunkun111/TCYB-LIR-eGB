@@ -18,7 +18,7 @@ import arff
 import pandas as pd
 from skmultiflow.data.data_stream import DataStream
 from sklearn.metrics import confusion_matrix, precision_score, accuracy_score, recall_score, f1_score, roc_auc_score, roc_curve
-
+import time
 
 
 # load .arff dataset
@@ -226,10 +226,22 @@ def RUS_run (dataset_name, batch, num_copy):
     
 if __name__ == '__main__':
     
+    # task1
     
-    #datasets = ['AGRa','HYP','RBF','RBFr','RTG','SEAa'] 
-    datasets = ['LEDg'] 
-    path = '/Synthetic/'
+    # datasets = ['AGRa','HYP']
+    
+    # datasets = ['RBF','RBFr']
+    
+    # task2
+    datasets = ['RTG','SEAa'] 
+    
+    # task3
+    # datasets = ['LEDa'] 
+    
+    # task4
+    # datasets = ['LEDg'] 
+    
+    path = '/TCYB-LIR-eGB/Synthetic/'
     batch_size = 100
     num_run = 15
 
@@ -241,21 +253,40 @@ if __name__ == '__main__':
             print('dataset', dataset_name, num_copy, 'batch_size', batch_size)
             
         
-            print (dataset_name, batch_size,'ARF')
+            print('=================')
+            start = time.time()
             ARF_run(dataset_name, batch_size, num_copy)
-                 
-            print (dataset_name, batch_size,'NSE')
-            NSE_run(dataset_name, batch_size, num_copy)
-                    
-            print (dataset_name, batch_size,'ADA')
-            ADA_run(dataset_name, batch_size, num_copy)
-                   
-            print (dataset_name, batch_size,'OBC')
-            OBC_run(dataset_name, batch_size, num_copy)
-                     
-            print (dataset_name, batch_size,'RUS')
-            RUS_run(dataset_name, batch_size, num_copy) 
+            end = time.time()
+            print (dataset_name, batch_size,'ARF','rum_time:', end-start)
             
+            
+            print('=================')
+            start = time.time()
+            NSE_run(dataset_name, batch_size, num_copy)
+            end = time.time()
+            print (dataset_name, batch_size,'NSE','rum_time:', end-start)
+            
+                 
+            print('=================')
+            start = time.time()
+            ADA_run(dataset_name, batch_size, num_copy)
+            end = time.time()
+            print (dataset_name, batch_size,'ADA','rum_time:', end-start)
+            
+                    
+            print('=================')
+            start = time.time()
+            OBC_run(dataset_name, batch_size, num_copy)
+            end = time.time()
+            print (dataset_name, batch_size,'OBC','rum_time:', end-start)
+            
+                   
+            print('=================')
+            start = time.time()
+            RUS_run(dataset_name, batch_size, num_copy)
+            end = time.time()
+            print (dataset_name, batch_size,'RUS','rum_time:', end-start)
+                     
             
 
     

@@ -22,7 +22,7 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
+# import pixiedust
 from copy import deepcopy
 
 
@@ -112,7 +112,7 @@ class Portion_GBDT(object):
     
     
     
-     def portion_pruning(self, y_test, n): 
+    def portion_pruning(self, y_test, n): 
          
         time_start=time.time()
         
@@ -123,7 +123,7 @@ class Portion_GBDT(object):
         
         loss = np.mean(tree_pruning_residual, axis=0)
         plt.plot(loss)
-        print(loss)
+        # print(loss)
         
         tree_portion = []
         prune_tree_list = []
@@ -133,8 +133,8 @@ class Portion_GBDT(object):
             portion = (np.mean(tree_residual_b) - np.mean(tree_residual_a))/np.mean(tree_residual_a)
             tree_portion.append((i,portion))
                             
-         prune_tree_list = new_list(tree_portion,n)
-        print(prune_tree_list)
+        prune_tree_list = new_list(tree_portion,n)
+        # print(prune_tree_list)
         
         self.dtrees = [self.dtrees[i] for i in range(0, len(self.dtrees), 1) if i not in prune_tree_list]   
     

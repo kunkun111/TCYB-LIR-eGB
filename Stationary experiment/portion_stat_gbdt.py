@@ -23,10 +23,10 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
+# import pixiedust
 from copy import deepcopy
 from scipy import stats
-import seaborn as sns
+# import seaborn as sns
 
 
 
@@ -116,7 +116,7 @@ class Portion_Stat_GBDT(object):
     
     
     
-     def portion_stat_pruning(self, y_test, n):#stationary      
+    def portion_stat_pruning(self, y_test, n):#stationary      
         time_start=time.time()
         init_residual = np.ones(y_test.shape[0]) * self.original_f
         residual = y_test.reshape(1, -1) - init_residual.reshape(1, -1)

@@ -22,7 +22,6 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
 from math import exp,log
 from sklearn.preprocessing import  OneHotEncoder
 from sklearn.metrics import mean_squared_error
@@ -118,7 +117,7 @@ class multi_GBDT(object):
     
         
     def fit(self, x_train, y_train):
-        np.random.seed(0)
+        # np.random.seed(0)
         f = dict()
         n, m = x_train.shape
         n_sample = int (n * self.sample_rate)
@@ -178,6 +177,7 @@ class multi_GBDT(object):
     
     
     def incre_fit(self,x_test,y_test,pred_score,new_tree_max_iter):
+        # np.random.seed(0)
         n, m = x_test.shape
         n_sample = int (n * self.sample_rate) 
         
@@ -252,11 +252,11 @@ class multi_GBDT(object):
                 k_pair = k_pair[~k_pair['b'].isin([v2])]
                 a += 2
         
-        print('keep',a)
+        # print('keep',a)
         #prune trees
         tree_prune_list = range(a,l)
         self.trees = [self.trees[i] for i in range(0, len(self.trees), 1) if i not in tree_prune_list] 
-        print ('len model',len(self.trees))
+        # print ('len model',len(self.trees))
         
                
     def pred_label(self, pre_prob):

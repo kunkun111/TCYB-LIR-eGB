@@ -17,7 +17,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import arff
 from tqdm import tqdm
-import pixiedust
+# import pixiedust
 from copy import deepcopy
 from portion_stat_gbdt import Portion_Stat_GBDT
 from portion_gbdt import Portion_GBDT
@@ -100,7 +100,7 @@ def kappa_digram(y_train_score,y_train,prune_list):
         
         
 
-def evaluation_Prune_GBDT_Stationary(data, n, **GBDT_pram):
+def evaluation_Prune_GBDT_Stationary(data, n, seeds, **GBDT_pram):
 # def evaluation_Prune_GBDT_Stationary(data, **GBDT_pram):
     
     # Load data 
@@ -108,8 +108,8 @@ def evaluation_Prune_GBDT_Stationary(data, n, **GBDT_pram):
     y = data[:, -1]
     
     # Data split
-    x_learn, x_test, y_learn, y_test = train_test_split(x, y, test_size=0.3, random_state=0)
-    x_train, x_prune, y_train, y_prune = train_test_split(x_learn, y_learn, test_size=0.3, random_state=0)
+    x_learn, x_test, y_learn, y_test = train_test_split(x, y, test_size=0.3, random_state=seeds)
+    x_train, x_prune, y_train, y_prune = train_test_split(x_learn, y_learn, test_size=0.3, random_state=seeds)
     
     # Training GBDT
     # model = Portion_GBDT(**GBDT_pram)
@@ -139,7 +139,7 @@ def evaluation_Prune_GBDT_Stationary(data, n, **GBDT_pram):
 if __name__ == '__main__':
     
     # Data path
-    path = '/Pruning_Real/'
+    path = '/TCYB-LIR-eGB/Pruning_Real/'
     
     # initial parameter
     GBDT_pram = {
@@ -148,21 +148,35 @@ if __name__ == '__main__':
         'learn_rate': 0.01,
         'max_depth': 4
     }
-          
     
     # Data sets
     data_name = ['Australian Credit Approval', 'Boston', 'Chess', 'Diabetes', 
                   'EEG_eye_state','German Credit','Ionosphere','Ringnorm','Spambase','Twonorm']
+    # data_name = ['Boston']
     
-    acc22=[]
     i = 10
     
     for j in range (len(data_name)):
         print(data_name[j])
         dataset_name = data_name[j]
         data = load_arff(path, dataset_name, -1)
-        acc2, f12 = evaluation_Prune_GBDT_Stationary(data, i, **GBDT_pram)
-        print('Accuracy:',acc2,'F1-score:',f12)
+        
+        total_acc=[]
+        total_f1=[]
+        
+        for seeds in range(0,5):
+            # np.random.seed(seeds)
+            acc2, f12 = evaluation_Prune_GBDT_Stationary(data, i, seeds, **GBDT_pram)
+            total_acc.append(acc2)
+            total_f1.append(f12)
+            print('Accuracy:',acc2,'F1-score:',f12,'random seed:', seeds)
+        
+        print('***********************************************')
+        print('Average Accuracy:',np.mean(total_acc))
+        print('Std Accuracy:',np.std(total_acc))
+        print('Average F1:',np.mean(total_f1))
+        print('Std F1:',np.std(total_f1))       
+        print('***********************************************')
 
     
     

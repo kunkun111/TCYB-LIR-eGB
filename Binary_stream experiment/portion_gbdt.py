@@ -22,7 +22,6 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
 from copy import deepcopy
 
 
@@ -46,7 +45,7 @@ class Portion_GBDT(object):
 
 
     def fit(self, x_train, y_train):
-        np.random.seed(0)
+#        np.random.seed(0)
         n, m = x_train.shape        
         f = np.ones(n) * np.mean(y_train)
         self.original_f = np.mean(y_train)
@@ -116,7 +115,7 @@ class Portion_GBDT(object):
         n, m = x_test.shape        
         f = pred_score      
         n_sample = int(n*self.sample_rate)
-        np.random.seed(0)
+#        np.random.seed(0)
         
         for iter_ in range(new_tree_max_iter):            
             sample_idx = np.random.permutation(n)[:n_sample]            

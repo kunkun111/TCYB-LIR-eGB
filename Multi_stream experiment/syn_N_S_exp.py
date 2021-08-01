@@ -17,7 +17,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import arff
 from tqdm import tqdm
-import pixiedust
+import time
 from copy import deepcopy
 from syn_gbdt_multi import multi_GBDT
 
@@ -101,72 +101,44 @@ def evaluation_Prune_GBDT(data, ini_train_size, win_size, max_tree, num_ince_tre
 
 
 def exp_synthetic(path, dataset_name, num_run, num_eval, exp_function, **exp_parm):
-    #print(**exp_parm)
     np.random.seed(0)
     batch_acc = np.zeros([num_run, num_eval])
+    run_time = []
 
     for num_copy in range(num_run):
         print(num_copy, '/', num_run)
         data = load_arff(path, dataset_name, num_copy)
+        
+        start = time.time()
         acc,f1,pred = exp_function(data, **exp_parm)
+        end = time.time()
+        print ('run_time:',end-start)
+        run_time.append(end-start)
+        
         batch_acc[num_copy] = acc
         print('Total acc, ',metrics.accuracy_score(data[exp_parm['ini_train_size']:, -1],pred))
 
-    print("%4f" % (batch_acc.mean()))
-    print("%4f" % (batch_acc.mean(axis=1).std()))
-
-
-def exp_realworld(path, dataset_name, num_run, exp_function, **exp_parm):
-
-    aver_total_acc = np.zeros(num_run)
-    aver_total_f1 = np.zeros(num_run)
-    np.random.seed(0)
-    data = load_arff(path, dataset_name, -1)
-    num_eval = int(
-        (data.shape[0] - exp_parm['ini_train_size']) / exp_parm['win_size'])
-    batch_acc = np.zeros([num_run, num_eval])
-    batch_f1 = np.zeros([num_run, num_eval])
-
-
-    tqdm.write('='*20)
-    tqdm.write((dataset_name + str(0)).center(20))
-    batch_acc[0], batch_f1[0], pred = exp_function(data, **exp_parm)
-    aver_total_acc[0] = metrics.accuracy_score(
-        data[exp_parm['ini_train_size']:, -1], pred)
-    aver_total_f1[0] = metrics.f1_score(
-        data[exp_parm['ini_train_size']:, -1], pred,average='macro')
- 
-
-    for r_seed in range(1, num_run):
-        np.random.seed(r_seed)
-        data = load_arff(path, dataset_name, -1)
-        num_eval = int((data.shape[0] - exp_parm['ini_train_size']) /
-                       exp_parm['win_size'])
-        tqdm.write('='*20)
-        #tqdm.write((dataset_name + str(r_seed)).center(20))
-        batch_acc[r_seed], batch_f1[r_seed], pred = exp_function(data, **exp_parm)
-        aver_total_acc[r_seed] = metrics.accuracy_score(
-            data[exp_parm['ini_train_size']:, -1], pred)
-        #tqdm.write('Current r_seed acc,' + str(aver_total_acc[r_seed]))
-        aver_total_f1[r_seed] = metrics.f1_score(
-            data[exp_parm['ini_train_size']:, -1], pred, average='macro')
-        
-        #tqdm.write('Current r_seed acc,' + str(aver_total_acc[r_seed]))
-        #tqdm.write('Current r_seed f1,' + str(aver_total_f1[r_seed]))
-        
-    tqdm.write('Average acc,' + str(np.mean(aver_total_acc)))
-    tqdm.write('Average f1,' + str(np.mean(aver_total_f1)))
-    #tqdm.write('Std acc,' + str(np.std(aver_total_acc)))
+    print('***********************************************')
+    print('batch_acc_mean:', (batch_acc.mean()))
+    print('batch_acc_std:' , (batch_acc.mean(axis=1).std()))
     
-    print(pred.shape)
-    print(data[exp_parm['ini_train_size']:, -1].shape)
+    # print(run_time)
+    print('run_time_mean:' , np.mean(run_time))
+    print('run_time_std:' , np.std(run_time))
+    print('***********************************************')
+    
+    #plt.plot(batch_acc.mean(axis=0))
+    #plt.title(str(dataset_name))
+    #plt.xlabel('Chunks')
+    #plt.ylabel('Accuracy')
+    #plt.show()
 
     
 
 
 if __name__=="__main__":
     # Data path
-    path = '/Synthetic/'
+    path = '/TCYB-LIR-eGB/Synthetic/'
     num_run = 15
     num_eval = 99
     

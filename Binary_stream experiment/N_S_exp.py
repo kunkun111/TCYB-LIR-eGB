@@ -17,9 +17,9 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import arff
 from tqdm import tqdm
-import pixiedust
 from copy import deepcopy
 from N_S_gbdt import N_S_GBDT
+import time
 
 
 
@@ -139,76 +139,89 @@ def SEA():
 def exp_synthetic(path, dataset_name, num_run, num_eval, exp_function, **exp_parm):
     np.random.seed(0)
     batch_acc = np.zeros([num_run, num_eval])
+    run_time = []
 
     for num_copy in range(num_run):
         print(num_copy, '/', num_run)
         data = load_arff(path, dataset_name, num_copy)
+        
+        start = time.time()
         acc,f1,pred = exp_function(data, **exp_parm)
+        end = time.time()
+        print ('run_time:',end-start)
+        run_time.append(end-start)
+        
         batch_acc[num_copy] = acc
         print('Total acc, ',metrics.accuracy_score(data[exp_parm['ini_train_size']:, -1],pred))
 
-    print("%4f" % (batch_acc.mean()))
-    print("%4f" % (batch_acc.mean(axis=1).std()))
-
+    print('***********************************************')
+    print('batch_acc_mean:', (batch_acc.mean()))
+    print('batch_acc_std:' , (batch_acc.mean(axis=1).std()))
+    
+    # print(run_time)
+    print('run_time_mean:' , np.mean(run_time))
+    print('run_time_std:' , np.std(run_time))
+    print('***********************************************')
+    
+    #plt.plot(batch_acc.mean(axis=0))
+    #plt.title(str(dataset_name))
+    #plt.xlabel('Chunks')
+    #plt.ylabel('Accuracy')
+    #plt.show()
+    
 
 
 def exp_realworld(path, dataset_name, num_run, exp_function, **exp_parm):
 
     aver_total_acc = np.zeros(num_run)
     aver_total_f1 = np.zeros(num_run)
-    np.random.seed(0)
     data = load_arff(path, dataset_name, -1)
     num_eval = int(
         (data.shape[0] - exp_parm['ini_train_size']) / exp_parm['win_size'])
     batch_acc = np.zeros([num_run, num_eval])
     batch_f1 = np.zeros([num_run, num_eval])
-
-
-    tqdm.write('='*20)
-    tqdm.write((dataset_name + str(0)).center(20))
-    batch_acc[0], batch_f1[0], pred = exp_function(data, **exp_parm)
-    aver_total_acc[0] = metrics.accuracy_score(
-        data[exp_parm['ini_train_size']:, -1], pred)
-    aver_total_f1[0] = metrics.f1_score(
-        data[exp_parm['ini_train_size']:, -1], pred,average='macro')
  
-
-    for r_seed in range(1, num_run):
+    for r_seed in range(0, num_run):
+        
+        print(str(dataset_name), 'randome_seeds:', str(r_seed))
+        
         np.random.seed(r_seed)
-        data = load_arff(path, dataset_name, -1)
-        num_eval = int((data.shape[0] - exp_parm['ini_train_size']) /
-                       exp_parm['win_size'])
-        tqdm.write('='*20)
-        #tqdm.write((dataset_name + str(r_seed)).center(20))
+        
+        start = time.time()
         batch_acc[r_seed], batch_f1[r_seed], pred = exp_function(data, **exp_parm)
+        end = time.time()
+        
         aver_total_acc[r_seed] = metrics.accuracy_score(
             data[exp_parm['ini_train_size']:, -1], pred)
-        #tqdm.write('Current r_seed acc,' + str(aver_total_acc[r_seed]))
         aver_total_f1[r_seed] = metrics.f1_score(
             data[exp_parm['ini_train_size']:, -1], pred, average='macro')
         
-        #tqdm.write('Current r_seed acc,' + str(aver_total_acc[r_seed]))
-        #tqdm.write('Current r_seed f1,' + str(aver_total_f1[r_seed]))
+        tqdm.write('Current r_seed acc,' + str(aver_total_acc[r_seed]))
+        tqdm.write('Current r_seed f1,' + str(aver_total_f1[r_seed]))
         
+        print ('run_time:', end-start)
+        print('=========================')
+        
+        result = np.zeros([pred.shape[0], 2])
+        result[:, 0] = pred
+        result[:, 1] = data[exp_parm['ini_train_size']:, -1]
+        # np.savetxt(str(dataset_name)+ str(r_seed) +'_N_S_base200incre25.out', result , delimiter=',')
+        
+    
+    print('***********************************************')
     tqdm.write('Average acc,' + str(np.mean(aver_total_acc)))
+    tqdm.write('Std acc,' + str(np.std(aver_total_acc)))
     tqdm.write('Average f1,' + str(np.mean(aver_total_f1)))
-    #tqdm.write('Std acc,' + str(np.std(aver_total_acc)))
-    
-    print(pred.shape)
-    print(data[exp_parm['ini_train_size']:, -1].shape)
-    result = np.zeros([pred.shape[0], 2])
-    result[:, 0] = pred
-    result[:, 1] = data[exp_parm['ini_train_size']:, -1]
-    #result = np.hstack([data[exp_parm['ini_train_size']:, -1], pred.T])
-    # np.savetxt(str(dataset_name)+'_stat_base200incre25_05.out', result , delimiter=',')
-    
+    tqdm.write('Std f1,' + str(np.std(aver_total_f1)))
+    print('***********************************************')
+
 
 
 if __name__ == '__main__':
     
     # Data path
-    path = '/Synthetic/'
-    num_run = 1
+    path = '/TCYB-LIR-eGB/Synthetic/'
+    num_run = 15
     num_eval = 99
     
     
@@ -227,7 +240,7 @@ if __name__ == '__main__':
         'max_depth': 4
     }
     
-
+    '''
     # Run Drift Synthetic Datasets
     data_name=['SEAa','RTG','RBF','RBFr','AGRa','HYP']
     for i in range (len(data_name)):
@@ -239,21 +252,18 @@ if __name__ == '__main__':
     '''
       
     # Pruning Real
-    path_rel = '/data/kunwang/Work2/Pruning_Real/'
-    num_run = 1
-    
-    # datasets = ['airline']
-    
-    datasets = ['spam_corpus_x2_feature_selected','elecNorm']
+    path_rel = '/TCYB-LIR-eGB/Pruning_Real/'
+    num_run = 5
     
     # datasets = ['usenet1','usenet2']
     
     # datasets = ['weather']
     
-    
+    datasets = ['spam_corpus_x2_feature_selected','elecNorm','imdb','mnista','mnistg','airline']
     
     for j in range (len(datasets)):
         IE_single_parm.update(GBDT_pram)
         dataset_name = datasets[j]
         exp_realworld(path_rel, dataset_name, num_run, evaluation_Prune_GBDT, **IE_single_parm)
-    '''
+    
+    

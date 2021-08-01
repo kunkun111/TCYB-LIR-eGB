@@ -27,30 +27,47 @@ def load_arff(path, dataset_name, num_copy):
     return np.array(dataset["data"])
 
 
-path = '/Pruning_Real/'
+path = '/TCYB-LIR-eGB/Pruning_Real/'
 num_copy = -1
 #dataset_name=['Thyroid']
 # dataset_name = ['Australian Credit Approval', 'Boston', 'Chess', 'Diabetes', 
-              # 'EEG_eye_state','German Credit','Ionosphere','Ringnorm','Spambase','Twonorm']
+#                'EEG_eye_state','German Credit','Ionosphere','Ringnorm','Spambase','Twonorm']
 dataset_name = ['Glass','Image','Iris','Letters','Lymph','Thyroid','Vehicle','Vowel','Waveform','Wine']
 #classes = [5,2,7,7,3,26,4,3,4,11,3,3]
 
 for i in range (len(dataset_name)):
     data = load_arff(path,dataset_name[i],num_copy)
     print(str(dataset_name[i]))
+    
     x = data[:,:-1]
     y = data[:,-1]
-    x_learn, x_test, y_learn, y_test = train_test_split(x, y, test_size=0.3, random_state=0)
-    x_train, x_prune, y_train, y_prune= train_test_split(x_learn, y_learn, test_size=0.3, random_state=0)
-
-
-    clf = RandomForestClassifier(n_estimators=150, max_depth=4, random_state=0)
-    clf.fit(x_train, y_train)
     
-    preds = clf.predict(x_test)
-
-    print('acc:', accuracy_score(preds,y_test))
-    print('f1:', f1_score(preds,y_test,average='macro'))
+    total_acc=[]
+    total_f1=[]
+    
+    for seeds in range(0,5):
+        x_learn, x_test, y_learn, y_test = train_test_split(x, y, test_size=0.3, random_state=seeds)
+        x_train, x_prune, y_train, y_prune= train_test_split(x_learn, y_learn, test_size=0.3, random_state=seeds)
+    
+        clf = RandomForestClassifier(n_estimators=150, max_depth=4, random_state=0)
+        clf.fit(x_train, y_train)
+        
+        preds = clf.predict(x_test)
+    
+        acc = accuracy_score(preds,y_test)
+        f1 = f1_score(preds,y_test,average='macro')
+        
+        print('Accuracy:',acc,'F1-score:',f1,'random seed:', seeds)
+        
+        total_acc.append(acc)
+        total_f1.append(f1)
+        
+    print('***********************************************')
+    print('Average Accuracy:',np.mean(total_acc))
+    print('Std Accuracy:',np.std(total_acc))
+    print('Average F1:',np.mean(total_f1))
+    print('Std F1:',np.std(total_f1))       
+    print('***********************************************')
 
 
 

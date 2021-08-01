@@ -22,7 +22,7 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
+# import pixiedust
 from math import exp,log
 from sklearn.preprocessing import  OneHotEncoder
 from sklearn.metrics import mean_squared_error
@@ -207,6 +207,7 @@ class multi_GBDT(object):
     def incre_fit(self,x_test,y_test,pred_score,new_tree_max_iter):
     
         n, m = x_test.shape
+        np.random.seed(0)
         n_sample = int (n * self.sample_rate) 
     
         for iter in range(new_tree_max_iter):
@@ -358,15 +359,15 @@ class multi_GBDT(object):
             
         
 #def evaluation_Prune_GBDT_Stationary(data, n, **GBDT_pram):
-def evaluation_Prune_GBDT_Stationary(data, n, **GBDT_pram):
+def evaluation_Prune_GBDT_Stationary(data, n, seeds, **GBDT_pram):
     
     # Load data   
     x = data[:, :-1]
     y = data[:, -1]
     
     # Data split
-    x_learn, x_test, y_learn, y_test = train_test_split(x, y, test_size=0.3, random_state=0)
-    x_train, x_prune, y_train, y_prune = train_test_split(x_learn, y_learn, test_size=0.3, random_state=0)
+    x_learn, x_test, y_learn, y_test = train_test_split(x, y, test_size=0.3, random_state=seeds)
+    x_train, x_prune, y_train, y_prune = train_test_split(x_learn, y_learn, test_size=0.3, random_state=seeds)
     
     # Training GBDT
     model = multi_GBDT(**GBDT_pram)
@@ -396,7 +397,7 @@ def evaluation_Prune_GBDT_Stationary(data, n, **GBDT_pram):
 if __name__ == '__main__':
 
     # Data path
-    path = '/Pruning_Real/'
+    path = '/TCYB-LIR-eGB/Pruning_Real/'
     
     # Run Drift Synthetic Datasets
     data_name = ['Glass','Image','Iris','Letters','Lymph','Thyroid','Vehicle','Vowel','Waveform','Wine']
@@ -419,6 +420,22 @@ if __name__ == '__main__':
       
         dataset_name = data_name[n]
         data = load_arff(path, dataset_name,-1)
-        acc2, f12 = evaluation_Prune_GBDT_Stationary(data, i, **GBDT_pram)
-        print('accuracy2:', acc2, 'f1:', f12)
+        
+        total_acc=[]
+        total_f1=[]
+        
+        for seeds in range(0,5):
+            # np.random.seed(seeds)
+            acc2, f12 = evaluation_Prune_GBDT_Stationary(data, i, seeds, **GBDT_pram)
+            total_acc.append(acc2)
+            total_f1.append(f12)
+            print('Accuracy:',acc2,'F1-score:',f12,'random seed:', seeds)
+        
+        print('***********************************************')
+        print('Average Accuracy:',np.mean(total_acc))
+        print('Std Accuracy:',np.std(total_acc))
+        print('Average F1:',np.mean(total_f1))
+        print('Std F1:',np.std(total_f1))       
+        print('***********************************************')
+
 

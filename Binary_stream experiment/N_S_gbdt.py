@@ -17,17 +17,18 @@ from scipy.io import arff
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 import time
+import warnings
 from sklearn.metrics import confusion_matrix, precision_score, accuracy_score, recall_score, f1_score, roc_auc_score, roc_curve
 import os
 from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
 from copy import deepcopy
 #import statsmodels.stats.weightstats as st
 from scipy import stats
-import seaborn as sns
+# import seaborn as sns
+warnings.filterwarnings('ignore')
 
 
 
@@ -52,7 +53,7 @@ class N_S_GBDT(object):
 
 
     def fit(self, x_train, y_train):
-        np.random.seed(0)
+        # np.random.seed(0)
         n, m = x_train.shape        
         f = np.ones(n) * np.mean(y_train)
         self.original_f = np.mean(y_train)
@@ -147,7 +148,7 @@ class N_S_GBDT(object):
         n, m = x_test.shape        
         f = pred_score      
         n_sample = int(n*self.sample_rate)
-        np.random.seed(0)
+        # np.random.seed(0)
         
         for iter_ in range(new_tree_max_iter):            
             sample_idx = np.random.permutation(n)[:n_sample]            

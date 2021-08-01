@@ -22,10 +22,10 @@ from skmultiflow.drift_detection.adwin import ADWIN
 from sklearn.ensemble import GradientBoostingRegressor
 import arff
 from tqdm import tqdm
-import pixiedust
 from copy import deepcopy
 from operator import itemgetter
 import warnings
+import time
 
 warnings.filterwarnings('ignore')
 
@@ -49,7 +49,7 @@ class Kappa_GBDT(object):
 
 
     def fit(self, x_train, y_train):
-        np.random.seed(0)
+        # np.random.seed(0)
         n, m = x_train.shape        
         f = np.ones(n) * np.mean(y_train)
         self.original_f = np.mean(y_train)
@@ -115,7 +115,8 @@ class Kappa_GBDT(object):
                 
         # rank the k_pair by sort the small kappa score
         k_pair.sort()
-        k_pair = pd.DataFrame(k_pair,columns=['k','a','b'])     
+        k_pair = pd.DataFrame(k_pair,columns=['k','a','b']) 
+        # print(k_pair)
         
         # reorder trees
         copy_dtrees = self.dtrees.copy()
@@ -123,10 +124,12 @@ class Kappa_GBDT(object):
         a = 0
         #print(len(self.dtrees))
         for i in range (0,l-1,2):
+            # print(k_pair.iloc[0,0])
             if k_pair.iloc[0,0]>=0.81:
                 break
             else:
                 v1=k_pair.iloc[0,1]
+                # print(v1)
                 v2=k_pair.iloc[0,2]
                 self.dtrees[i] = copy_dtrees[int(v1)]
                 self.dtrees[i+1] = copy_dtrees[int(v2)]
@@ -147,7 +150,7 @@ class Kappa_GBDT(object):
         n, m = x_test.shape        
         f = pred_score      
         n_sample = int(n*self.sample_rate)
-        np.random.seed(0)
+        # np.random.seed(0)
         for iter_ in range(new_tree_max_iter):            
             sample_idx = np.random.permutation(n)[:n_sample]            
             y_residual = y_test - f
