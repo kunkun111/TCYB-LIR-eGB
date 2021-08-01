@@ -139,7 +139,7 @@ class multi_GBDT(object):
         
         
     def fit(self, x_train, y_train):
-        np.random.seed(0)
+        # np.random.seed(0)
         f = dict()
         n, m = x_train.shape
         n_sample = int (n * self.sample_rate)
@@ -207,7 +207,7 @@ class multi_GBDT(object):
     def incre_fit(self,x_test,y_test,pred_score,new_tree_max_iter):
     
         n, m = x_test.shape
-        np.random.seed(0)
+        # np.random.seed(0)
         n_sample = int (n * self.sample_rate) 
     
         for iter in range(new_tree_max_iter):
